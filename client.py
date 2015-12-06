@@ -194,7 +194,9 @@ class AsyncModbusSerialClient(ModbusSerialClient):
         self.timer = None
     @staticmethod
     def __implementation(method):
-        return AsyncModbusRtuFramer(ClientDecoder())
+        method = method.lower()
+        if method == 'rtu': return AsyncModbusRtuFramer(ClientDecoder())
+        raise ParameterException("Unsupported framer method requested")
     def connect(self):
         _logger.info("AsyncModbusSerialClient.connect()")
         if self.socket: return True
