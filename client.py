@@ -137,6 +137,7 @@ class AsyncFifoTransactionManager(FifoTransactionManager):
                 raise ModbusIOException(str(ex))
         return self._buildResponse(self.request.transaction_id)
     def _sendSyncRequest(self, data):
+        _logger.info("AsyncFifoTransactionManager._sendSyncRequest(%s)", str(data))
         try:
             self.client._send(self.frame)
         except socket.error as ex:
@@ -144,6 +145,7 @@ class AsyncFifoTransactionManager(FifoTransactionManager):
             _logger.debug("  Transaction failed. (%s) " % ex)
             raise ex
     def _sendAsyncRequest(self, data):
+        _logger.info("AsyncFifoTransactionManager. _sendAsyncRequest(%s)", str(data))
         try:
             self.client._send(self.frame)
         except socket.error as msg:
@@ -209,7 +211,6 @@ class AsyncModbusSerialClient(ModbusSerialClient):
         try:
             data = self._recv(65535)
         except serial.serialutil.SerialException as msg:
-            _logger.critical("SerialException: %s", str(msg))
             self.framer.processError(AsyncErrorResponse.SerialReadError,  self._handleResponse)
             return
         _logger.debug("DATA: %s", str(data))
