@@ -207,7 +207,7 @@ class AsyncModbusSerialClient(ModbusSerialClient):
             self.framer.processError(AsyncErrorResponse.SerialConnectionError,  self._handleResponse)
             return
         try:
-            data = self.socket.read(65535)
+            data = self._recv(65535)
         except serial.serialutil.SerialException as msg:
             _logger.critical("SerialException: %s", str(msg))
             self.framer.processError(AsyncErrorResponse.SerialReadError,  self._handleResponse)
@@ -243,7 +243,11 @@ class AsyncModbusSerialClient(ModbusSerialClient):
             self.timer = self.ioloop.add_timeout(datetime.timedelta(seconds=self.timeout), self._timeout)
     def _recv(self, size):
         _logger.info("AsyncModbusSerialClient._recv((%d)",  size)
-        result = self.socket.read(size)
+        try:
+            result = self.socket.read(size)
+        except serial.serialutil.SerialException as ex:
+            _logger.critical("SerialException: %s", str(ex))
+            raise ex
         self._last_frame_end = time.time()
         return result
     def _timeout(self):
