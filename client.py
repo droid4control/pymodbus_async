@@ -44,7 +44,7 @@ from pymodbus.constants import Defaults
 from pymodbus.factory import ClientDecoder
 
 from pymodbus.pdu import ModbusResponse
-from pymodbus.compat import byte2int
+from pymodbus.compat import iteritems, byte2int
 
 import socket
 import tornado.ioloop
@@ -67,6 +67,10 @@ class AsyncErrorResponse(ModbusResponse):
         _logger.info("AsyncErrorResponse.__init__()")
         super(AsyncErrorResponse, self).__init__(**kwargs)
         self.error_code = error_code
+    def __str__(self):
+        values = dict((v, k) for k, v in iteritems(self.__class__.__dict__)
+            if not k.startswith('__') and not callable(v))
+        return self.__class__.__name__ + "(" + values.get(self.error_code, "unknown") + ")"
 
 class AsyncModbusRtuFramer(ModbusRtuFramer):
     def __init__(self, decoder):
