@@ -181,6 +181,8 @@ class AsyncModbusSerialClient(ModbusSerialClient):
         self.parity = kwargs.get('parity',   Defaults.Parity)
         self.baudrate = kwargs.get('baudrate', Defaults.Baudrate)
         self.timeout = kwargs.get('timeout',  Defaults.Timeout) or Defaults.Timeout
+        self._last_frame_end = 0.0
+        self._silent_interval = 3.5 * (1 + 8 + 2) / self.baudrate
         self.ioloop = tornado.ioloop.IOLoop.instance()
         self.timer = None
     @staticmethod
