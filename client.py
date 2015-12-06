@@ -63,6 +63,7 @@ class AsyncErrorResponse(ModbusResponse):
     SerialWriteError = 2
     SerialReadError = 3
     SerialReadTimeout = 4
+    ModbusDecodeError = 5
     def __init__(self, error_code, **kwargs):
         _logger.info("AsyncErrorResponse.__init__()")
         super(AsyncErrorResponse, self).__init__(**kwargs)
@@ -105,11 +106,11 @@ class AsyncModbusRtuFramer(ModbusRtuFramer):
             if self.checkFrame():
                 result = self.decoder.decode(self.getFrame())
                 if result is None:
-                    raise ModbusIOException("Unable to decode response")
-                self.populateResult(result)
-                self.advanceFrame()
-                self.resetFrame()
-                callback(result)  # defer or push to a thread?
+                    self.processError(AsyncErrorResponse.ModbusDecodeError)
+                else:
+                    self.populateResult(result)
+                    self.resetFrame()
+                    callback(result)  # defer or push to a thread?
                 return
             else: self.resetFrame() # clear possible errors
     def processError(self, error, callback):
