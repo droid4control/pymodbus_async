@@ -194,20 +194,20 @@ class AsyncModbusSerialClient(ModbusSerialClient):
         res = ModbusSerialClient.connect(self)
         self.timeout = timeout
         if self.socket:
-            self.ioloop.add_handler(self.socket.fileno(), partial(self.dataReceived, self.socket), self.ioloop.READ)
+            self.ioloop.add_handler(self.socket.fileno(), self.dataReceived, self.ioloop.READ)
         return res
     def close(self):
         if self.socket:
             self.ioloop.remove_handler(self.socket.fileno())
         return ModbusSerialClient.close(self)
-    def dataReceived(self, socket, fd, events):
-        _logger.info("AsyncModbusSerialClient.dataReceived(%s, %s, %s)", str(socket), str(fd), str(events))
+    def dataReceived(self, fd, events):
+        _logger.info("AsyncModbusSerialClient.dataReceived(%s, %s)", str(fd), str(events))
         if events & self.ioloop.ERROR:
             _logger.critical("Serial ERROR")
             self.framer.processError(AsyncErrorResponse.SerialConnectionError,  self._handleResponse)
             return
         try:
-            data = socket.read(65535)
+            data = self.socket.read(65535)
         except serial.serialutil.SerialException as msg:
             _logger.critical("SerialException: %s", str(msg))
             self.framer.processError(AsyncErrorResponse.SerialReadError,  self._handleResponse)
